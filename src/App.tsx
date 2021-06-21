@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import useSwr from "swr";
 import ReactMapGL, { Marker, FlyToInterpolator, MapRef } from "react-map-gl";
 import useSupercluster from "use-supercluster";
@@ -53,6 +53,28 @@ export default function App() {
     options: { radius: 75, maxZoom: 20 }
   });
 
+  const handleGetExpansionZoom = (
+    id: number,
+    latitude: number,
+    longitude: number
+  ) => {
+    const expansionZoom = Math.min(
+      supercluster.getClusterExpansionZoom(id),
+      20
+    );
+
+    setViewport({
+      ...viewport,
+      latitude,
+      longitude,
+      zoom: expansionZoom,
+      transitionDuration: 1000,
+      transitionInterpolator: new FlyToInterpolator({
+        speed: 2
+      })
+    });
+  };
+
   return (
     <div>
       <ReactMapGL
@@ -82,23 +104,9 @@ export default function App() {
                     width: `${10 + (pointCount / points.length) * 20}px`,
                     height: `${10 + (pointCount / points.length) * 20}px`
                   }}
-                  onClick={() => {
-                    const expansionZoom = Math.min(
-                      supercluster.getClusterExpansionZoom(cluster.id),
-                      20
-                    );
-
-                    setViewport({
-                      ...viewport,
-                      latitude,
-                      longitude,
-                      zoom: expansionZoom,
-                      transitionDuration: 1000,
-                      transitionInterpolator: new FlyToInterpolator({
-                        speed: 2
-                      })
-                    });
-                  }}
+                  onClick={() =>
+                    handleGetExpansionZoom(cluster.id, latitude, longitude)
+                  }
                 >
                   {pointCount}
                 </div>
